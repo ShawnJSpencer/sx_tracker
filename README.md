@@ -1,4 +1,4 @@
-# Daily Bloom
+# New Day
 
 A private, iPad-first daily symptom and medication tracker with built-in analytics and a printable report for doctors.
 

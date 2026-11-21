@@ -1,5 +1,5 @@
 // Offline cache for the app shell only. Never caches GitHub API traffic (her data).
-const V = 'bloom-v10';
+const V = 'newday-v1';
 const SHELL = ['./', 'index.html', 'styles.css', 'manifest.webmanifest', 'icon6.svg', 'icon6-180.png',
   'js/app.js', 'js/config.js', 'js/util.js', 'js/store.js', 'js/sync.js', 'js/popover.js', 'js/log.js',
   'js/charts.js', 'js/insights.js', 'js/labs.js', 'js/report.js', 'js/pdf.js'];

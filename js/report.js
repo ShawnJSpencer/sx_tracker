@@ -15,6 +15,7 @@ let root, from = addDays(today(), -29), to = today(), withPhotos = false;
 export function mountReport(el) { root = el; render(); }
 export function refreshReport() { if (root && root.offsetParent) render(); }
 
+const SUN = `<svg viewBox="0 0 40 40" width="44" height="44" aria-hidden="true"><defs><clipPath id="sunclip"><rect width="40" height="40" rx="10"/></clipPath></defs><g clip-path="url(#sunclip)"><rect width="40" height="23" fill="#F79A82"/><rect y="23" width="40" height="17" fill="#2EC4C0"/><path d="M11.5 23 A8.5 8.5 0 0 1 28.5 23 Z" fill="#FFD45E"/></g></svg>`;
 const TREND = ['fatigue', 'brainfog', 'refreshed', 'rash', 'jointpain'];
 const FOOT = 'Self-reported daily log. Scores are 0–10 (10 = worst, except rows where higher is better, such as “Woke refreshed”).';
 
@@ -70,7 +71,7 @@ function render() {
   const paper = h('article', { class: 'paper' }); root.append(paper);
   paper.append(h('header', { class: 'rep-head' },
     h('div', {}, h('div', { class: 'rep-kicker' }, 'Symptom summary'), h('h1', {}, M.name || 'Daily symptom log'), h('p', {}, `${fmtDateLong(from)} – ${fmtDateLong(to)} · ${M.logged.length} of ${M.dates.length} days logged`)),
-    h('div', { class: 'rep-mark' }, '✿')));
+    h('div', { class: 'rep-mark', html: SUN })));
   paper.append(h('section', {}, h('h2', {}, 'Medications'), h('table', { class: 'rep-table' }, h('thead', {}, h('tr', {}, ['Medication', `Dose on ${fmtDate(to)}`, 'Changes in period', 'Missed'].map(x => h('th', {}, x)))), h('tbody', {}, M.medRows.map(r => h('tr', {}, r.map(x => h('td', {}, x))))))));
   const tc = h('div', { class: 'rep-chart' });
   paper.append(h('section', {}, h('h2', {}, 'Trend'), tc));
@@ -103,7 +104,7 @@ async function buildPDF(M) {
   pdf.text(ML, y + 8, 'SYMPTOM SUMMARY', { size: 8.5, font: 'bold', color: C.rose });
   pdf.text(ML, y + 36, M.name || 'Daily symptom log', { size: 24, font: 'serif' });
   pdf.text(ML, y + 54, `${fmtDateLong(from)} – ${fmtDateLong(to)}  ·  ${M.logged.length} of ${M.dates.length} days logged`, { size: 9.5, color: C.muted });
-  flower(pdf, MR - 18, y + 22);
+  sunrise(pdf, MR - 34, y + 4, 34);
   y += 66; pdf.line(ML, y, MR, y, { color: '#F2DCE4', width: 1.5 }); y += 18;
 
   const section = title => { ensure(60); pdf.text(ML, y + 12, title, { size: 14, font: 'serif', color: C.roseD }); y += 24; };
@@ -194,15 +195,19 @@ async function buildPDF(M) {
   pdf.pages.forEach((pg, i) => {
     pdf.cur = pg;
     pdf.line(ML, PAGE.H - 36, MR, PAGE.H - 36, { color: C.line });
-    pdf.text(ML, PAGE.H - 24, `Daily Bloom${M.name ? ' · ' + M.name : ''} · ${fmtDate(from)} – ${fmtDate(to)}`, { size: 7.5, color: C.muted });
+    pdf.text(ML, PAGE.H - 24, `New Day${M.name ? ' · ' + M.name : ''} · ${fmtDate(from)} – ${fmtDate(to)}`, { size: 7.5, color: C.muted });
     pdf.text(MR, PAGE.H - 24, `Page ${i + 1} of ${total}`, { size: 7.5, color: C.muted, align: 'right' });
   });
   return pdf.output();
 }
 
-function flower(pdf, cx, cy) {
-  for (let i = 0; i < 5; i++) { const a = i / 5 * Math.PI * 2 - Math.PI / 2; pdf.circle(cx + Math.cos(a) * 7, cy + Math.sin(a) * 7, 6, { fill: '#EBC0CD' }); }
-  pdf.circle(cx, cy, 4.2, { fill: '#D9B26A' });
+function sunrise(pdf, x, y, s) {
+  const hz = y + s * 0.575;
+  pdf.rect(x, y, s, s, { fill: '#F79A82', r: s * 0.22 });
+  pdf.circle(x + s / 2, hz, s * 0.21, { fill: '#FFD45E' });
+  pdf.rect(x, hz, s, s * 0.2, { fill: '#2EC4C0' });
+  pdf.rect(x, hz, s, s * 0.425, { fill: '#2EC4C0', r: s * 0.22 });
+  pdf.rect(x, hz, s, s * 0.2, { fill: '#2EC4C0' });
 }
 
 function trendChart(pdf, M, x0, y0, w, hgt) {

@@ -20,6 +20,7 @@ h1, h2, h3, h4 { font-family: var(--serif); font-weight: 500; letter-spacing: -.
 /* ---------- top bar ---------- */
 .top { display: flex; align-items: center; gap: 18px; padding: calc(10px + env(safe-area-inset-top)) 20px 10px; background: linear-gradient(180deg, #FDFAF7, var(--bg)); border-bottom: 1px solid var(--line); }
 .brand { display: flex; align-items: center; gap: 10px; min-width: 190px; }
+.sprig { line-height: 0; }
 .brand-t { font-family: var(--serif); font-size: 22px; font-weight: 500; line-height: 1.1; }
 .brand-s { font-size: 12.5px; color: var(--muted); }
 .tabs { display: flex; gap: 4px; background: var(--bg2); padding: 4px; border-radius: 999px; margin: 0 auto; }
@@ -306,7 +307,7 @@ figcaption { display: flex; justify-content: space-between; align-items: center;
 .rep-head { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid var(--rose-soft); padding-bottom: 14px; margin-bottom: 10px; }
 .rep-kicker { text-transform: uppercase; letter-spacing: .14em; font-size: 11px; color: var(--rose); font-weight: 600; }
 .rep-head h1 { font-size: 30px; margin: 2px 0; } .rep-head p { margin: 0; color: var(--muted); font-size: 13px; }
-.rep-mark { font-size: 34px; color: var(--rose); opacity: .5; }
+.rep-mark { line-height: 0; }
 .paper section { margin-top: 20px; break-inside: avoid; }
 .paper h2 { font-size: 18px; margin-bottom: 8px; color: var(--rose-d); }
 .rep-table { width: 100%; border-collapse: collapse; font-size: 12.5px; }

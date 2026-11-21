@@ -9,7 +9,7 @@ import { h, $, $$, today, uid, esc, range, fmtDate } from './util.js';
 import { sheet, toast } from './popover.js';
 import { getCell } from './store.js';
 
-export const VERSION = '2026-11-21 · 7';
+export const VERSION = '2026-11-21 · 8';
 const TABS = [['log', 'Log'], ['insights', 'Insights'], ['labs', 'Labs'], ['report', 'Report']];
 let tab = localStorage.getItem('sx_tab') || 'log';
 
@@ -20,7 +20,7 @@ async function boot() {
   const nav = h('nav', { class: 'tabs' }, TABS.map(([k, l]) => h('button', { 'data-tab': k, onclick: () => show(k) }, l)));
   const status = h('button', { class: 'sync-pill', onclick: () => openSettings('sync') });
   app.append(h('header', { class: 'top' },
-    h('div', { class: 'brand' }, h('span', { class: 'sprig', html: SPRIG }), h('div', {}, h('div', { class: 'brand-t' }, 'Daily Bloom'), h('div', { class: 'brand-s' }, greeting()))),
+    h('div', { class: 'brand' }, h('span', { class: 'sprig', html: SUNMARK }), h('div', {}, h('div', { class: 'brand-t' }, 'New Day'), h('div', { class: 'brand-s' }, greeting()))),
     nav, h('div', { class: 'top-r' }, status, h('button', { class: 'icon-btn', onclick: () => openSettings(), 'aria-label': 'Settings' }, '⚙'))));
   const views = {}; for (const [k] of TABS) { views[k] = h('main', { class: 'view', id: 'v-' + k }); app.append(views[k]); }
   mountLog(views.log); mountInsights(views.insights); mountLabs(views.labs); mountReport(views.report);
@@ -59,7 +59,7 @@ function greeting() {
 function openSettings(focus) {
   const body = h('div', { class: 'settings' });
   const s = sheet('Settings', body);
-  body.append(syncSection(s), medsSection(), symptomsSection(), profileSection(), dataSection(), h('p', { class: 'muted small app-ver' }, `Daily Bloom · version ${VERSION}`));
+  body.append(syncSection(s), medsSection(), symptomsSection(), profileSection(), dataSection(), h('p', { class: 'muted small app-ver' }, `New Day · version ${VERSION}`));
   if (focus) setTimeout(() => body.querySelector(`[data-sec="${focus}"]`)?.scrollIntoView({ behavior: 'smooth' }), 250);
 }
 
@@ -138,7 +138,7 @@ function symptomsSection() {
       wrap.append(h('div', { class: 'cust-list' }, mine.map(c => customRow(c, draw))));
     }
     const hidden = new Set(JSON.parse(localStorage.getItem('sx_hidden') || '[]'));
-    wrap.append(h('h4', { class: 'sub-h' }, '✿ Rows shown in the log'), h('p', { class: 'muted small' }, 'Hide rows she doesn’t need. Hidden rows keep their past data.'));
+    wrap.append(h('h4', { class: 'sub-h' }, '☀ Rows shown in the log'), h('p', { class: 'muted small' }, 'Hide rows she doesn’t need. Hidden rows keep their past data.'));
     for (const g of GROUPS) {
       const ss = SYMPTOMS.filter(s => s.g === g.id); if (!ss.length) continue;
       wrap.append(h('div', { class: 'sym-toggle-g' }, `${g.glyph} ${g.name}`));
@@ -258,6 +258,6 @@ function promptUnlock() {
   setTimeout(() => pass.focus(), 250);
 }
 
-const SPRIG = `<svg viewBox="0 0 40 40" width="34" height="34" aria-hidden="true"><path d="M20 36 C20 26 20 18 22 8" stroke="#7C9A86" stroke-width="1.8" fill="none" stroke-linecap="round"/><path d="M20.6 24c-5-1-8-5-8.5-9 4.6.3 8 3.6 8.5 9z" fill="#A8C3AF"/><path d="M21 18c4.2-1.2 6.8-4.6 7-8.2-4 .5-6.8 3.6-7 8.2z" fill="#C7DACB"/><circle cx="22.4" cy="7" r="4" fill="#E9A9BD"/><circle cx="22.4" cy="7" r="1.6" fill="#D9B26A"/></svg>`;
+export const SUNMARK = `<svg viewBox="0 0 40 40" width="34" height="34" aria-hidden="true"><defs><clipPath id="sunclip"><rect width="40" height="40" rx="10"/></clipPath></defs><g clip-path="url(#sunclip)"><rect width="40" height="23" fill="#F79A82"/><rect y="23" width="40" height="17" fill="#2EC4C0"/><path d="M11.5 23 A8.5 8.5 0 0 1 28.5 23 Z" fill="#FFD45E"/></g></svg>`;
 
 boot();

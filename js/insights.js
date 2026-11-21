@@ -41,7 +41,7 @@ function render() {
     h('span', { class: 'muted' }, `${fmtDate(dates[0])} – ${fmtDate(dates.at(-1))} · ${logged.length} of ${dates.length} days logged`)));
 
   if (!logged.length) {
-    root.append(h('div', { class: 'empty' }, h('div', { class: 'empty-art' }, '✿'), h('h3', {}, 'Nothing to chart yet'), h('p', {}, 'A few days of check-ins on the Log tab and the patterns start to show up here.')));
+    root.append(h('div', { class: 'empty' }, h('div', { class: 'empty-art' }, '☀'), h('h3', {}, 'Nothing to chart yet'), h('p', {}, 'A few days of check-ins on the Log tab and the patterns start to show up here.')));
     return;
   }
 
