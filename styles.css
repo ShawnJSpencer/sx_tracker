@@ -272,6 +272,22 @@ figcaption { display: flex; justify-content: space-between; align-items: center;
 .lab-hist li span { color: var(--muted); width: 56px; } .lab-hist li b.high, .lab-hist li b.low, .lab-hist li b.pos { color: var(--rose-d); }
 .lab-hist em { color: var(--muted); margin-left: auto; font-style: normal; }
 
+/* labs list */
+.lab-tools { gap: 10px; }
+.lab-search { width: 220px; height: 38px; border-radius: 999px; padding: 6px 14px; }
+.paper.lab-paper { max-width: none; padding: 18px 22px; border-radius: 20px; box-shadow: none; border: 1px solid var(--line); }
+.lab-table { font-size: 14px; }
+.lab-table tbody tr:not(.grp) { cursor: pointer; }
+.lab-table tbody tr:not(.grp):hover td { background: var(--blush); }
+.lab-table td { padding: 8px 8px; }
+.lab-table td.res b { font-weight: 600; } .lab-table td.res b.high, .lab-table td.res b.low, .lab-table td.res b.pos { color: var(--rose-d); }
+.lab-table td.res .u { color: var(--muted); font-size: 12.5px; }
+.lab-table td.res .flag { margin-left: 8px; font-size: 10.5px; padding: 2px 7px; }
+.lab-table td.note { font-size: 12.5px; max-width: 260px; }
+.lab-table tr.grp td { padding-top: 14px; }
+.grp-meta { font-family: var(--sans); font-size: 12px; color: var(--muted); margin-left: 10px; }
+@media (max-width: 700px) { .lab-table th:nth-child(4), .lab-table td:nth-child(4), .lab-table th:nth-child(5), .lab-table td:nth-child(5) { display: none; } .lab-search { width: 100%; } }
+
 /* report */
 .paper { background: #fff; max-width: 860px; margin: 0 auto; padding: 36px 44px; border-radius: 6px; box-shadow: var(--shadow); }
 .rep-head { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid var(--rose-soft); padding-bottom: 14px; margin-bottom: 10px; }
