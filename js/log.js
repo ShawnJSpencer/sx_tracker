@@ -113,7 +113,7 @@ function paintCell(td) {
   td.classList.remove('has-v', 'v-yes', 'v-no');
   let html = '';
   if (s.type === 'photo') {
-    const n = photosFor(d).length;
+    const n = photosFor(d, s.id).length;
     html = n ? `<span class="ph">◉${n > 1 ? `<sup>${n}</sup>` : ''}</span>` : '<span class="ph-add">+</span>';
     if (n) td.classList.add('has-v');
   } else if (v === undefined) {
@@ -125,6 +125,7 @@ function paintCell(td) {
     html = v ? `<span class="yes${s.neutral ? ' neutral' : ''}${s.urgent ? ' urgent' : ''}">●</span>` : '<span class="no">–</span>';
   } else if (s.type === 'choice') {
     td.classList.add('has-v'); const i = s.options.indexOf(v);
+    if (s.custom) { html = `<span class="ch ch-c" title="${esc(v)}">${esc(s.short?.[i] ?? v)}</span>`; td.innerHTML = html; return; }
     html = `<span class="ch ch-${i}">${esc(s.short?.[i] ?? v)}</span>`;
   } else if (s.type === 'number') {
     td.classList.add('has-v'); html = `<span class="nm">${+(+v).toFixed(1)}</span>`;
@@ -163,7 +164,7 @@ function onCellClick(e) {
     case 'choice': return choices(td, { title, options: s.options, value: v, onPick: x => setCell(d, s.id, x) });
     case 'number': return number(td, { title, value: v, unit: s.unit, step: s.step, min: s.min, max: s.max, presets: s.presets.length ? s.presets : lastNumbers(s.id, d), onPick: x => setCell(d, s.id, x) });
     case 'note': return note(td, { title: `Notes · ${fmtDate(d)}`, value: v, onPick: x => setCell(d, s.id, x) });
-    case 'photo': return photoSheet(d);
+    case 'photo': return photoSheet(d, s.id);
   }
 }
 function lastNumbers(sym, d) { for (let i = 1; i < 60; i++) { const v = getCell(addDays(d, -i), sym); if (v !== undefined) return [v]; } return []; }
@@ -261,26 +262,26 @@ function compress(file) {
     img.onerror = rej; img.src = url;
   });
 }
-export function photoSheet(d) {
+export function photoSheet(d, sym = 'photo') {
   const grid = h('div', { class: 'photo-grid' });
   let tag = 'Face rash';
   const tags = h('div', { class: 'chips' }, ['Face rash', 'Other rash', 'Hair / part line', 'Other'].map(t => h('button', { class: 'chip' + (t === tag ? ' on' : ''), onclick: e => { tag = t; $$('.chip', tags).forEach(c => c.classList.toggle('on', c === e.currentTarget)); } }, t)));
   const input = h('input', { type: 'file', accept: 'image/*', multiple: true, style: 'display:none', onchange: async () => {
-    for (const f of input.files) { const blob = await compress(f); const id = uid(); await photoSet(id, blob); addPhotoMeta({ id, date: d, tag, takenAt: Date.now() }); }
+    for (const f of input.files) { const blob = await compress(f); const id = uid(); await photoSet(id, blob); addPhotoMeta({ id, date: d, tag, sym, takenAt: Date.now() }); }
     input.value = ''; render();
   } });
   const body = h('div', {}, h('p', { class: 'muted' }, 'Same spot, same light, every few days makes changes easy to see. Photos are encrypted before they sync.'),
     tags, h('button', { class: 'btn primary', onclick: () => input.click() }, '＋ Add photo'), input, grid);
   async function render() {
     grid.innerHTML = '';
-    for (const p of photosFor(d)) {
+    for (const p of photosFor(d, sym)) {
       const fig = h('figure', {}, h('div', { class: 'ph-load' }, '…'), h('figcaption', {}, p.tag, h('button', { class: 'link-btn', onclick: () => { if (confirm('Delete this photo?')) { deletePhoto(p.id); render(); } } }, 'Delete')));
       grid.append(fig);
       loadPhoto(p.id).then(b => { if (b) fig.firstChild.replaceWith(h('img', { src: URL.createObjectURL(b), alt: p.tag })); else fig.firstChild.textContent = 'Not on this device yet'; });
     }
   }
   render();
-  sheet(`Photos · ${fmtDateLong(d)}`, body);
+  sheet(`${sym === 'photo' ? 'Photos' : SYM[sym]?.label || 'Photos'} · ${fmtDateLong(d)}`, body);
 }
 
 export function daySummary(d) {

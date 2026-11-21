@@ -166,7 +166,7 @@ function render() {
   // completeness
   const cc = h('div');
   root.append(card('Logging consistency', 'Share of days in this period with at least one entry in each group', cc));
-  hbars(cc, GROUPS.map(g => { const ss = SYMPTOMS.filter(s => s.g === g.id && s.type !== 'photo'); const n = dates.filter(d => ss.some(s => getCell(d, s.id) !== undefined)).length; return { label: `${g.glyph} ${g.name}`, value: n / dates.length, note: ` ${n}d`, color: '#22A07A' }; }));
+  hbars(cc, GROUPS.filter(g => SYMPTOMS.some(s => s.g === g.id && s.type !== 'photo')).map(g => { const ss = SYMPTOMS.filter(s => s.g === g.id && s.type !== 'photo'); const n = dates.filter(d => ss.some(s => getCell(d, s.id) !== undefined)).length; return { label: `${g.glyph} ${g.name}`, value: n / dates.length, note: ` ${n}d`, color: '#22A07A' }; }));
 }
 
 function highlights(dates, prevDates) {

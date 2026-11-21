@@ -1,5 +1,5 @@
-import { load, onChange, state, medList, upsertMed, setProfile, profile, replaceState, merge, save } from './store.js';
-import { SYMPTOMS, GROUPS } from './config.js';
+import { load, onChange, state, medList, upsertMed, setProfile, profile, replaceState, merge, save, upsertSym, customSyms } from './store.js';
+import { SYMPTOMS, GROUPS, TYPE_LABELS } from './config.js';
 import { mountLog, refresh as refreshLog, onShowLog } from './log.js';
 import { mountInsights, refreshInsights } from './insights.js';
 import { mountLabs, refreshLabs } from './labs.js';
@@ -127,16 +127,90 @@ function medsSection() {
 }
 
 function symptomsSection() {
-  const hidden = new Set(JSON.parse(localStorage.getItem('sx_hidden') || '[]'));
-  const wrap = h('section', { class: 'set-sec', 'data-sec': 'symptoms' }, h('h4', {}, '✿ Rows shown in the log'), h('p', { class: 'muted small' }, 'Hide rows she doesn’t need. Hidden rows keep their past data.'));
-  for (const g of GROUPS) {
-    wrap.append(h('div', { class: 'sym-toggle-g' }, `${g.glyph} ${g.name}`));
-    wrap.append(h('div', { class: 'chips' }, SYMPTOMS.filter(s => s.g === g.id).map(s => h('button', { class: 'chip' + (hidden.has(s.id) ? '' : ' on'), onclick: e => {
-      hidden.has(s.id) ? hidden.delete(s.id) : hidden.add(s.id); e.currentTarget.classList.toggle('on');
-      localStorage.setItem('sx_hidden', JSON.stringify([...hidden])); refreshLog({ all: true });
-    } }, s.label))));
-  }
+  const wrap = h('section', { class: 'set-sec', 'data-sec': 'symptoms' });
+  const draw = () => {
+    wrap.innerHTML = '';
+    wrap.append(h('h4', {}, '✧ Add a symptom'), h('p', { class: 'muted small' }, 'Adds a new row to the log. It syncs to her other devices and shows up in Insights and the Report automatically.'), addSymForm(draw));
+    const mine = customSyms();
+    if (mine.length) {
+      wrap.append(h('div', { class: 'sym-toggle-g' }, 'Her added symptoms'));
+      wrap.append(h('div', { class: 'cust-list' }, mine.map(c => customRow(c, draw))));
+    }
+    const hidden = new Set(JSON.parse(localStorage.getItem('sx_hidden') || '[]'));
+    wrap.append(h('h4', { class: 'sub-h' }, '✿ Rows shown in the log'), h('p', { class: 'muted small' }, 'Hide rows she doesn’t need. Hidden rows keep their past data.'));
+    for (const g of GROUPS) {
+      const ss = SYMPTOMS.filter(s => s.g === g.id); if (!ss.length) continue;
+      wrap.append(h('div', { class: 'sym-toggle-g' }, `${g.glyph} ${g.name}`));
+      wrap.append(h('div', { class: 'chips' }, ss.map(s => h('button', { class: 'chip' + (hidden.has(s.id) ? '' : ' on'), onclick: e => {
+        hidden.has(s.id) ? hidden.delete(s.id) : hidden.add(s.id); e.currentTarget.classList.toggle('on');
+        localStorage.setItem('sx_hidden', JSON.stringify([...hidden])); refreshLog({ all: true });
+      } }, s.label))));
+    }
+  };
+  draw();
   return wrap;
+}
+
+function addSymForm(done) {
+  const f = { label: '', type: 'scale', g: 'custom', better: false, unit: '', options: '', step: '1' };
+  const name = h('input', { class: 'in', placeholder: 'e.g. Ringing in ears, Hot flashes, Steps walked' });
+  name.addEventListener('input', () => f.label = name.value);
+  const type = h('select', { class: 'in' }, Object.entries(TYPE_LABELS).map(([k, l]) => h('option', { value: k }, l)));
+  const group = h('select', { class: 'in' }, GROUPS.map(g => h('option', { value: g.id, selected: g.id === 'custom' }, `${g.glyph} ${g.name}`)));
+  group.addEventListener('change', () => f.g = group.value);
+  const extra = h('div');
+  const preview = h('div', { class: 'type-hint muted small' });
+  const hints = {
+    scale: 'Tap the cell → the 0–10 wheel.', yesno: 'Tap to cycle ● yes → – no → blank.', number: 'Tap → enter a number (steps, ounces of water, blood pressure…).',
+    choice: 'Tap → pick one of the options you list.', photo: 'Tap → add photos for that day (encrypted).', note: 'Tap → write a short note.',
+  };
+  const drawExtra = () => {
+    f.type = type.value; extra.innerHTML = ''; preview.textContent = hints[f.type];
+    if (f.type === 'scale') {
+      const cb = h('input', { type: 'checkbox', checked: f.better, onchange: e => f.better = e.target.checked });
+      extra.append(h('label', { class: 'check' }, cb, 'Higher is better (like “Energy” — colours it green instead of rose)'));
+    } else if (f.type === 'number') {
+      const u = h('input', { class: 'in', placeholder: 'e.g. oz, steps, mmHg', value: f.unit }); u.addEventListener('input', () => f.unit = u.value);
+      const st = h('select', { class: 'in' }, [['1', 'Whole numbers'], ['0.5', 'Halves (0.5)'], ['0.1', 'Decimals (0.1)']].map(([v, l]) => h('option', { value: v, selected: v === f.step }, l)));
+      st.addEventListener('change', () => f.step = st.value);
+      extra.append(h('div', { class: 'row3' }, h('label', {}, 'Unit (optional)', u), h('label', {}, 'Precision', st), h('span')));
+    } else if (f.type === 'choice') {
+      const o = h('input', { class: 'in', placeholder: 'Separate with commas, e.g. Left, Right, Both', value: f.options }); o.addEventListener('input', () => f.options = o.value);
+      extra.append(h('label', {}, 'Options', o));
+    }
+  };
+  type.addEventListener('change', drawExtra); drawExtra();
+  const msg = h('span', { class: 'muted small' });
+  const add = h('button', { class: 'btn primary', onclick: () => {
+    const label = f.label.trim();
+    if (!label) { msg.textContent = 'Give it a name first.'; return; }
+    if (SYMPTOMS.some(s => s.label.toLowerCase() === label.toLowerCase())) { msg.textContent = 'There is already a row with that name.'; return; }
+    const rec = { id: 'c_' + uid(), label, type: f.type, g: f.g, created: Date.now() };
+    if (f.type === 'scale' && f.better) rec.better = 'high';
+    if (f.type === 'number') { rec.unit = f.unit.trim(); rec.step = +f.step; rec.presets = []; }
+    if (f.type === 'choice') { rec.options = f.options.split(',').map(x => x.trim()).filter(Boolean); if (rec.options.length < 2) { msg.textContent = 'List at least two options.'; return; } }
+    upsertSym(rec); toast(`“${label}” added to the log`); done();
+  } }, 'Add row');
+  return h('div', { class: 'add-sym' },
+    h('div', { class: 'row3' }, h('label', {}, 'Symptom name', name), h('label', {}, 'Type of answer', type), h('label', {}, 'Group', group)),
+    preview, extra, h('div', { class: 'pop-actions' }, msg, add));
+}
+
+function customRow(c, done) {
+  const name = h('input', { class: 'in', value: c.label });
+  const group = h('select', { class: 'in' }, GROUPS.map(g => h('option', { value: g.id, selected: g.id === (c.g || 'custom') }, `${g.glyph} ${g.name}`)));
+  const opts = c.type === 'choice' ? h('input', { class: 'in', value: (c.options || []).join(', ') }) : null;
+  const detail = c.type === 'number' && c.unit ? ` · ${c.unit}` : c.type === 'scale' && c.better === 'high' ? ' · higher is better' : '';
+  return h('div', { class: 'cust-row' },
+    h('div', { class: 'row3' }, h('label', {}, 'Name', name), h('label', {}, 'Group', group), h('label', {}, 'Type', h('div', { class: 'type-pill' }, TYPE_LABELS[c.type] + detail))),
+    opts ? h('label', {}, 'Options (add new ones at the end; renaming an option leaves old days under the old name)', opts) : null,
+    h('div', { class: 'pop-actions' },
+      h('button', { class: 'link-btn danger', onclick: () => { if (confirm(`Remove “${c.label}” from the log? Days already logged are kept in her data.`)) { upsertSym({ ...c, deleted: true }); done(); } } }, 'Remove row'),
+      h('button', { class: 'btn', onclick: () => {
+        const upd = { ...c, label: name.value.trim() || c.label, g: group.value };
+        if (opts) { const o = opts.value.split(',').map(x => x.trim()).filter(Boolean); if (o.length >= 2) upd.options = o; }
+        upsertSym(upd); toast('Saved'); done();
+      } }, 'Save')));
 }
 
 function profileSection() {

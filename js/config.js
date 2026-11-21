@@ -10,6 +10,7 @@ export const GROUPS = [
   { id: 'flags',  name: 'Immune Clues',  glyph: '◈', hint: 'The features doctors look for when weighing lupus and related conditions' },
   { id: 'gut',    name: 'Digestion',     glyph: '❀' },
   { id: 'daily',  name: 'Daily Notes',   glyph: '✎' },
+  { id: 'custom', name: 'My Additions',  glyph: '✧' },
 ];
 
 // type: scale (0–10 wheel) | yesno (tap cycles) | choice | number | note | photo
@@ -64,6 +65,28 @@ export const SYMPTOMS = [
 ];
 
 export const SYM = Object.fromEntries(SYMPTOMS.map(s => [s.id, s]));
+const BASE = SYMPTOMS.slice();
+
+// Symptoms she adds in Settings live in her (encrypted) data, not in this file.
+// They are spliced into the shared SYMPTOMS list so every screen picks them up.
+export function applyCustomSyms(records) {
+  SYMPTOMS.splice(0, SYMPTOMS.length, ...BASE);
+  for (const k of Object.keys(SYM)) if (k.startsWith('c_')) delete SYM[k];
+  const list = Object.values(records || {}).filter(r => !r.deleted).sort((a, b) => (a.created || 0) - (b.created || 0));
+  const byGroup = {};
+  for (const r of list) {
+    const s = { ...r, custom: true, g: GROUPS.some(g => g.id === r.g) ? r.g : 'custom' };
+    if (s.type === 'choice') { s.options = (r.options || []).filter(Boolean); s.short = s.options.map(o => o.length > 5 ? o.slice(0, 4) + '…' : o); }
+    if (s.type === 'number') { s.presets = s.presets || []; s.step = +s.step || 1; }
+    (byGroup[s.g] ||= []).push(s); SYM[s.id] = s;
+  }
+  // insert each custom symptom after the last built-in row of its group
+  for (const [g, arr] of Object.entries(byGroup)) {
+    let at = -1; SYMPTOMS.forEach((x, i) => { if (x.g === g) at = i; });
+    SYMPTOMS.splice(at < 0 ? SYMPTOMS.length : at + 1, 0, ...arr);
+  }
+}
+export const TYPE_LABELS = { scale: '0–10 score', yesno: 'Yes / No', number: 'Number', choice: 'Pick from a list', photo: 'Photos', note: 'Note' };
 
 // Default medications. Fixed ids so two devices never create duplicates.
 // kind: 'mg' carries a dose forward until changed; 'pack' follows an

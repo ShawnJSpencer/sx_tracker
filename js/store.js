@@ -1,6 +1,6 @@
 // Local data store (IndexedDB) with per-cell timestamps so edits made on the
 // iPad and the iPhone merge cleanly instead of overwriting each other.
-import { DEFAULT_MEDS } from './config.js';
+import { DEFAULT_MEDS, applyCustomSyms } from './config.js';
 import { today, diffDays, now } from './util.js';
 
 const DB = 'sx_tracker', VER = 1;
@@ -27,7 +27,7 @@ export const photoGet = id => idb('photos', 'readonly', s => s.get(id));
 export const photoSet = (id, blob) => idb('photos', 'readwrite', s => { s.put(blob, id); });
 
 export function emptyState() {
-  return { schema: 1, meds: {}, doses: {}, cells: {}, labs: {}, photos: {}, profile: {} };
+  return { schema: 1, meds: {}, doses: {}, cells: {}, labs: {}, photos: {}, profile: {}, syms: {} };
 }
 export let state = emptyState();
 const listeners = new Set();
@@ -47,6 +47,7 @@ export async function load() {
   const s = await kvGet('state');
   state = s ? { ...emptyState(), ...s } : emptyState();
   seedMeds();
+  applyCustomSyms(state.syms);
   invalidateDoseIndex();
 }
 function seedMeds() {
@@ -58,7 +59,11 @@ function seedMeds() {
     if (seed != null) (state.doses[today()] ||= {})[m.id] ??= [seed, 1];
   }
 }
-export function replaceState(s) { state = { ...emptyState(), ...s }; seedMeds(); changed({ all: true }); }
+export function replaceState(s) { state = { ...emptyState(), ...s }; seedMeds(); applyCustomSyms(state.syms); changed({ all: true }); }
+
+// ---------- custom symptoms ----------
+export function upsertSym(s) { state.syms ||= {}; state.syms[s.id] = { ...state.syms[s.id], ...s, ts: now() }; applyCustomSyms(state.syms); changed({ all: true }); }
+export const customSyms = () => Object.values(state.syms || {}).filter(s => !s.deleted).sort((a, b) => (a.created || 0) - (b.created || 0));
 
 // ---------- cells ----------
 export function getCell(date, sym) { const c = state.cells[date]?.[sym]; return c && c[0] != null ? c[0] : undefined; }
@@ -129,7 +134,8 @@ export function deleteLab(id) { if (state.labs[id]) { state.labs[id] = { ...stat
 export const labList = () => Object.values(state.labs).filter(l => !l.deleted);
 export function addPhotoMeta(p) { state.photos[p.id] = { ...p, ts: now() }; changed({ photo: p.id, date: p.date, sym: 'photo' }); }
 export function deletePhoto(id) { const p = state.photos[id]; if (p) { state.photos[id] = { ...p, deleted: true, ts: now() }; changed({ photo: id, date: p.date, sym: 'photo' }); } }
-export const photosFor = date => Object.values(state.photos).filter(p => p.date === date && !p.deleted);
+// Built-in 'photo' row shows photos without a symptom; custom photo rows show their own.
+export const photosFor = (date, sym) => Object.values(state.photos).filter(p => p.date === date && !p.deleted && (!sym || (p.sym || 'photo') === sym));
 export function setProfile(k, v) { state.profile[k] = [v, now()]; changed({ profile: k }); }
 export const profile = k => state.profile[k]?.[0];
 
@@ -163,6 +169,8 @@ export function merge(remote) {
   ch = mergeRecs(state.labs, remote.labs) || ch;
   ch = mergeRecs(state.photos, remote.photos) || ch;
   ch = mergeFlat(state.profile, remote.profile) || ch;
+  ch = mergeRecs((state.syms ||= {}), remote.syms) || ch;
+  applyCustomSyms(state.syms);
   if (ch) { invalidateDoseIndex(); listeners.forEach(fn => fn({ all: true })); save(); }
   const needsPush = JSON.stringify(state) !== JSON.stringify(remote);
   return { changed: ch && JSON.stringify(state) !== before, needsPush };
