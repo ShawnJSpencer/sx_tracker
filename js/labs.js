@@ -26,7 +26,7 @@ function render() {
     return;
   }
   const grid = h('div', { class: 'lab-grid' });
-  for (const [test, rows] of Object.entries(byTest).sort()) {
+  for (const [test, rows] of Object.entries(byTest).sort((a, b) => ((labFlag(a[1][0]) === 'ok') - (labFlag(b[1][0]) === 'ok')) || a[0].localeCompare(b[0]))) {
     const latest = rows[0];
     const nums = rows.filter(r => !isNaN(parseFloat(r.value))).map(r => ({ v: parseFloat(r.value), d: r.date })).reverse();
     const flag = labFlag(latest);
@@ -34,7 +34,7 @@ function render() {
     const card = h('section', { class: 'card lab-card' },
       h('header', {}, h('h3', {}, test), h('span', { class: 'flag ' + flag }, flag === 'high' ? 'High' : flag === 'low' ? 'Low' : flag === 'pos' ? 'Abnormal' : 'In range')),
       h('div', { class: 'lab-latest' }, h('b', {}, latest.value), ' ', latest.unit || '', h('small', {}, ` · ${fmtDate(latest.date)}`)),
-      latest.lo || latest.hi ? h('div', { class: 'muted small' }, `Range ${latest.lo ?? ''}–${latest.hi ?? ''} ${latest.unit || ''}`) : null,
+      latest.lo || latest.hi ? h('div', { class: 'muted small' }, `Range ${rangeTxt(latest)} ${latest.unit || ''}`) : null,
       nums.length > 1 ? sp : null,
       h('ul', { class: 'lab-hist' }, rows.map(r => h('li', { onclick: () => editLab(r) }, h('span', {}, fmtDate(r.date)), h('b', { class: labFlag(r) }, `${r.value} ${r.unit || ''}`), r.note ? h('em', {}, r.note) : null))));
     grid.append(card);
@@ -42,6 +42,7 @@ function render() {
   }
   root.append(grid);
 }
+export const rangeTxt = l => l.lo && l.hi ? `${l.lo}–${l.hi}` : l.hi ? `< ${l.hi}` : l.lo ? `> ${l.lo}` : '';
 const num = v => v === '' || v == null || isNaN(parseFloat(v)) ? null : parseFloat(v);
 export function labFlag(l) {
   if (l.abnormal) return 'pos';

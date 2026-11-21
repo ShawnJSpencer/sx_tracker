@@ -4,7 +4,7 @@ import { getCell, medList, doseFor, doseChanges, labList, photosFor, profile } f
 import { h, today, addDays, range, mean, round1, fmtDate, fmtDateLong, esc } from './util.js';
 import { lineChart } from './charts.js';
 import { rolling } from './insights.js';
-import { labFlag } from './labs.js';
+import { labFlag, rangeTxt } from './labs.js';
 import { loadPhoto } from './sync.js';
 
 let root, from = addDays(today(), -29), to = today(), withPhotos = false;
@@ -74,7 +74,7 @@ function render() {
   const labs = labList().sort((a, b) => a.date < b.date ? 1 : -1);
   if (labs.length) paper.append(h('section', {}, h('h2', {}, 'Lab results'), h('table', { class: 'rep-table' },
     h('thead', {}, h('tr', {}, h('th', {}, 'Date'), h('th', {}, 'Test'), h('th', {}, 'Result'), h('th', {}, 'Range'))),
-    h('tbody', {}, labs.slice(0, 40).map(l => h('tr', { class: labFlag(l) !== 'ok' ? 'hl' : '' }, h('td', {}, fmtDate(l.date)), h('td', {}, l.test), h('td', {}, `${l.value} ${l.unit || ''}${labFlag(l) === 'high' ? ' ↑' : labFlag(l) === 'low' ? ' ↓' : ''}`), h('td', {}, l.lo || l.hi ? `${l.lo ?? ''}–${l.hi ?? ''}` : '')))))));
+    h('tbody', {}, labs.slice(0, 40).map(l => h('tr', { class: labFlag(l) !== 'ok' ? 'hl' : '' }, h('td', {}, fmtDate(l.date)), h('td', {}, l.test), h('td', {}, `${l.value} ${l.unit || ''}${labFlag(l) === 'high' ? ' ↑' : labFlag(l) === 'low' ? ' ↓' : ''}`), h('td', {}, rangeTxt(l))))))));
 
   // photos
   if (withPhotos) {
