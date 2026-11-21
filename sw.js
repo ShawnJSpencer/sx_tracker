@@ -1,6 +1,6 @@
 // Offline cache for the app shell only. Never caches GitHub API traffic (her data).
-const V = 'bloom-v9';
-const SHELL = ['./', 'index.html', 'styles.css', 'manifest.webmanifest', 'icon5.svg', 'icon5-180.png',
+const V = 'bloom-v10';
+const SHELL = ['./', 'index.html', 'styles.css', 'manifest.webmanifest', 'icon6.svg', 'icon6-180.png',
   'js/app.js', 'js/config.js', 'js/util.js', 'js/store.js', 'js/sync.js', 'js/popover.js', 'js/log.js',
   'js/charts.js', 'js/insights.js', 'js/labs.js', 'js/report.js', 'js/pdf.js'];
 self.addEventListener('install', e => { e.waitUntil(caches.open(V).then(c => c.addAll(SHELL)).then(() => self.skipWaiting())); });

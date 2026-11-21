@@ -9,7 +9,7 @@ import { h, $, $$, today, uid, esc, range, fmtDate } from './util.js';
 import { sheet, toast } from './popover.js';
 import { getCell } from './store.js';
 
-export const VERSION = '2026-11-21 · 6';
+export const VERSION = '2026-11-21 · 7';
 const TABS = [['log', 'Log'], ['insights', 'Insights'], ['labs', 'Labs'], ['report', 'Report']];
 let tab = localStorage.getItem('sx_tab') || 'log';
 
