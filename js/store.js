@@ -77,6 +77,7 @@ export function datesWithData() {
 export const medList = (all = false) => Object.values(state.meds).filter(m => all || !m.archived).sort((a, b) => (a.order || 99) - (b.order || 99));
 export function upsertMed(m) { state.meds[m.id] = { ...state.meds[m.id], ...m, ts: now() }; changed({ med: m.id }); }
 
+const num = (v, d) => v === '' || v == null || isNaN(+v) ? d : +v;
 let doseIdx = null;
 function invalidateDoseIndex() { doseIdx = null; }
 function buildDoseIndex() {
@@ -93,9 +94,9 @@ export function doseFor(date, mid) {
   if (ex !== undefined) return { value: ex, explicit: true };
   if (med.kind === 'pack') {
     const p = med.pack || {}; if (!p.start || date < p.start) return { value: undefined };
-    const cyc = (+p.active || 24) + (+p.inactive || 4);
+    const act = num(p.active, 24), ina = num(p.inactive, 4), cyc = act + ina || 1;
     const pos = ((diffDays(p.start, date) % cyc) + cyc) % cyc;
-    return { value: pos < (+p.active || 24) ? 'Active' : 'Placebo', inherited: true, day: pos + 1 };
+    return { value: pos < act ? 'Active' : 'Placebo', inherited: true, day: pos + 1 };
   }
   if (!doseIdx) buildDoseIndex();
   const arr = doseIdx[mid] || [];

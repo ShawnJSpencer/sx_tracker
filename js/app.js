@@ -102,7 +102,7 @@ function medsSection() {
       const inact = h('input', { class: 'in sm', inputmode: 'numeric', value: m.pack?.inactive ?? 4 });
       const saveBtn = h('button', { class: 'btn', onclick: () => {
         const upd = { ...m, name: name.value.trim() || m.name, generic: generic.value.trim(), unit: unit.value.trim() };
-        if (m.kind === 'pack') upd.pack = { start: packStart.value, active: +act.value || 24, inactive: +inact.value || 4 };
+        if (m.kind === 'pack') upd.pack = { start: packStart.value, active: act.value === '' ? 24 : +act.value, inactive: inact.value === '' ? 4 : +inact.value };
         else upd.quick = quick.value.split(',').map(x => parseFloat(x)).filter(x => !isNaN(x));
         upsertMed(upd); toast('Saved');
       } }, 'Save');
@@ -183,6 +183,6 @@ function promptUnlock() {
   setTimeout(() => pass.focus(), 250);
 }
 
-const SPRIG = `<svg viewBox="0 0 40 40" width="34" height="34" aria-hidden="true"><path d="M20 36 C20 26 20 18 22 8" stroke="#7C9A86" stroke-width="1.8" fill="none" stroke-linecap="round"/><path d="M20.6 24c-5-1-8-5-8.5-9 4.6.3 8 3.6 8.5 9z" fill="#A8C3AF"/><path d="M21 18c4.2-1.2 6.8-4.6 7-8.2-4 .5-6.8 3.6-7 8.2z" fill="#C7DACB"/><circle cx="22.4" cy="7" r="3.6" fill="#E3A7B8"/><circle cx="22.4" cy="7" r="1.4" fill="#C4587C"/></svg>`;
+const SPRIG = `<svg viewBox="0 0 40 40" width="34" height="34" aria-hidden="true"><path d="M20 36 C20 26 20 18 22 8" stroke="#7C9A86" stroke-width="1.8" fill="none" stroke-linecap="round"/><path d="M20.6 24c-5-1-8-5-8.5-9 4.6.3 8 3.6 8.5 9z" fill="#A8C3AF"/><path d="M21 18c4.2-1.2 6.8-4.6 7-8.2-4 .5-6.8 3.6-7 8.2z" fill="#C7DACB"/><circle cx="22.4" cy="7" r="4" fill="#E9A9BD"/><circle cx="22.4" cy="7" r="1.6" fill="#D9B26A"/></svg>`;
 
 boot();
