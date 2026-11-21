@@ -8,8 +8,8 @@
   "background_color": "#FBF7F3",
   "theme_color": "#FBF7F3",
   "icons": [
-    { "src": "icon4-180.png", "sizes": "180x180", "type": "image/png" },
-    { "src": "icon4-512.png", "sizes": "512x512", "type": "image/png" },
-    { "src": "icon4.svg", "sizes": "any", "type": "image/svg+xml" }
+    { "src": "icon5-180.png", "sizes": "180x180", "type": "image/png" },
+    { "src": "icon5-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "icon5.svg", "sizes": "any", "type": "image/svg+xml" }
   ]
 }
