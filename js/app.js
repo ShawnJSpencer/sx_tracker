@@ -9,6 +9,7 @@ import { h, $, $$, today, uid, esc, range, fmtDate } from './util.js';
 import { sheet, toast } from './popover.js';
 import { getCell } from './store.js';
 
+export const VERSION = '2026-11-21 · 3';
 const TABS = [['log', 'Log'], ['insights', 'Insights'], ['labs', 'Labs'], ['report', 'Report']];
 let tab = localStorage.getItem('sx_tab') || 'log';
 
@@ -58,7 +59,7 @@ function greeting() {
 function openSettings(focus) {
   const body = h('div', { class: 'settings' });
   const s = sheet('Settings', body);
-  body.append(syncSection(s), medsSection(), symptomsSection(), profileSection(), dataSection());
+  body.append(syncSection(s), medsSection(), symptomsSection(), profileSection(), dataSection(), h('p', { class: 'muted small app-ver' }, `Daily Bloom · version ${VERSION}`));
   if (focus) setTimeout(() => body.querySelector(`[data-sec="${focus}"]`)?.scrollIntoView({ behavior: 'smooth' }), 250);
 }
 

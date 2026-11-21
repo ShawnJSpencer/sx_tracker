@@ -294,6 +294,13 @@ figcaption { display: flex; justify-content: space-between; align-items: center;
 .grp-meta { font-family: var(--sans); font-size: 12px; color: var(--muted); margin-left: 10px; }
 @media (max-width: 700px) { .lab-table th:nth-child(4), .lab-table td:nth-child(4), .lab-table th:nth-child(5), .lab-table td:nth-child(5) { display: none; } .lab-search { width: 100%; } }
 
+/* pdf ready sheet */
+.pdf-ready { text-align: center; padding: 6px 0 10px; }
+.pdf-ic { width: 64px; height: 80px; margin: 4px auto 10px; border-radius: 10px; background: var(--rose-soft); color: var(--rose-d); display: grid; place-items: center; font: 700 15px var(--sans); border: 1px solid #F1DCE3; }
+.pdf-actions { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-top: 12px; }
+.pdf-actions .btn { text-decoration: none; min-width: 120px; text-align: center; }
+.app-ver { text-align: center; margin: 6px 0 0; }
+
 /* report */
 .paper { background: #fff; max-width: 860px; margin: 0 auto; padding: 36px 44px; border-radius: 6px; box-shadow: var(--shadow); }
 .rep-head { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid var(--rose-soft); padding-bottom: 14px; margin-bottom: 10px; }
